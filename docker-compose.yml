@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+  app:
+    build: ./app
+    container_name: fastapi
+    links:
+      #The network connection to flower-classification
+      - flower-classification 
+    depends_on:
+      # It will build this image first
+      - flower-classification 
+    expose:
+      - 5050
+      
+  flower-classification:
+    image: docker.io/bitnami/tensorflow-serving:2-debian-10
+    container_name: flower-classification
+    ports:
+      - 8500:8500
+      - 8501:8501
+    volumes:
+      - flower-classification_data:/bitnami
+      - ./tensorflow-model-server/conf:/bitnami/tensorflow-serving/conf/
+      - ./servables:/bitnami/model-data
+    networks:
+      - ml-network
+
+volumes:
+  ml-db:
+    name: ml-db
+  flower-classification_data:
+    driver: local
+
+networks:
+  ml-network:
